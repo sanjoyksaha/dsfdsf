@@ -19,3 +19,4 @@ Route::get('/', function () {
 });
 
 Route::post('/book', [BookController::class, 'store']);
+Route::patch('/updatebook/{book}', [BookController::class, 'update']);
