@@ -6,9 +6,19 @@ use App\Models\Book;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class BookReservationTest extends TestCase
+class BookManagementTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function testGetAllBooks()
+    {
+        $this->withoutExceptionHandling();
+
+        $response = $this->get('/books');
+
+        $response->assertOk();
+
+    }
 
     public function testABookCanBeAddedToTheLibrary()
     {
@@ -20,9 +30,13 @@ class BookReservationTest extends TestCase
             'status' => 1
         ]);
 
-        $response->assertOk();
+//        $response->assertOk();
+
+        $book = Book::first();
 
         $this->assertCount(1, Book::all());
+
+        $response->assertRedirect($book->path());
     }
 
     public function testTitleIsRequired()
@@ -79,7 +93,7 @@ class BookReservationTest extends TestCase
 
         $book = Book::first();
 
-        $response = $this->patch('/updatebook/' . $book->id, [
+        $response = $this->patch($book->path(), [
             'title' => 'Test Title Update',
             'author' => 'Test Author Update',
             'details' => 'Test Details Update',
@@ -90,5 +104,30 @@ class BookReservationTest extends TestCase
         $this->assertEquals('Test Author Update', Book::first()->author);
         $this->assertEquals('Test Details Update', Book::first()->details);
         $this->assertEquals(0, Book::first()->status);
+
+        $response->assertRedirect($book->fresh()->path());
+    }
+
+    public function testABookCanBeDeleted()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->post('/book', [
+            'title' => 'Test Title',
+            'author' => 'Test Author',
+            'details' => 'Test Details',
+            'status' => 1
+        ]);
+
+        $book = Book::first();
+        $this->assertCount(1, Book::all());
+        $response = $this->delete('/deletebook/'. $book->id);
+        $this->assertCount(0, Book::all());
+
+        $response->assertRedirect('/books');
+//        $response->assertJson([
+//            'status' => 1,
+//            'msg' => 'Deleted'
+//        ]);
     }
 }

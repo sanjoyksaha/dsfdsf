@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
+    public function index()
+    {
+        Book::all();
+    }
     public function store(Request $request){
         $data = $request->validate([
             'title' => 'required',
@@ -15,7 +19,9 @@ class BookController extends Controller
             'status' => 'required'
         ]);
 
-        Book::create($data);
+        $book = Book::create($data);
+
+        return redirect($book->path());
     }
 
     public function update(Request $request, Book $book){
@@ -27,5 +33,17 @@ class BookController extends Controller
         ]);
 
         $book->update($data);
+
+        return redirect($book->path());
+    }
+
+    public function delete(Book $book){
+        $book->delete();
+
+        return redirect('/books');
+//        return response()->json([
+//            'status' => 1,
+//            'msg' => 'Deleted'
+//        ]);
     }
 }
